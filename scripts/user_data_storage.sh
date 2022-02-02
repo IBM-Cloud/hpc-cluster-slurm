@@ -57,4 +57,7 @@ fi
 systemctl start nfs-server
 systemctl enable nfs-server
 
+# Due To Polkit Local Privilege Escalation Vulnerability
+chmod 0755 /usr/bin/pkexec
+
 echo END `date '+%Y-%m-%d %H:%M:%S'`

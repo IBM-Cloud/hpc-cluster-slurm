@@ -269,6 +269,9 @@ NodeName=${cluster_prefix}-worker-[0-${worker_index}] CPUs=${ncpus} ThreadsPerCo
 PartitionName=debug Nodes=${cluster_prefix}-worker-[0-${worker_index}] Default=YES MaxTime=INFINITE State=UP
 EOF
 
+# Due To Polkit Local Privilege Escalation Vulnerability
+chmod 0755 /usr/bin/pkexec
+
 # restart munge on every node
 sudo systemctl enable munge
 sudo systemctl start munge

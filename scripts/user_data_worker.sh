@@ -38,6 +38,9 @@ chmod 600 /home/slurm/.ssh/authorized_keys
 chmod 700 /home/slurm/.ssh
 chown -R slurm:slurm /home/slurm/.ssh
 
+# Due To Polkit Local Privilege Escalation Vulnerability
+chmod 0755 /usr/bin/pkexec
+
 # Allow ssh from masters
 sed -i "s#^\(AuthorizedKeysFile.*\)#\1 /mnt/data/ssh/authorized_keys#g" /etc/ssh/sshd_config
 systemctl restart sshd
