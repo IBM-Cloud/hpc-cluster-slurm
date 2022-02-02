@@ -57,10 +57,13 @@ locals {
     "master"  = file("${path.module}/scripts/user_data_input_master.tpl")
 
     "worker"  = file("${path.module}/scripts/user_data_input_worker.tpl")
+
+    "login"  = file("${path.module}/scripts/user_data_input_login.tpl")
   }
   storage_template_file = lookup(local.script_map, "storage")
   master_template_file  = lookup(local.script_map, "master")
   worker_template_file  = lookup(local.script_map, "worker")
+  login_template_file  = lookup(local.script_map, "login")
   tags                  = ["hpcc", var.cluster_prefix]
   hf_ncpus              = tonumber(data.ibm_is_instance_profile.worker.vcpu_count[0].value)
   hf_ncores             = local.hf_ncpus / 2
@@ -282,6 +285,10 @@ data "ibm_is_image" "stock_image" {
   name = local.stock_image_name
 }
 
+data "template_file" "login_user_data" {
+  template = local.login_template_file
+}
+
 resource "ibm_is_instance" "login" {
   name           = "${var.cluster_prefix}-login"
   image          = data.ibm_is_image.stock_image.id
@@ -290,6 +297,7 @@ resource "ibm_is_instance" "login" {
   zone           = data.ibm_is_zone.zone.name
   keys           = local.ssh_key_id_list
   resource_group = data.ibm_resource_group.rg.id
+  user_data      = data.template_file.login_user_data.rendered
   tags           = local.tags
 
   # fip will be assinged
