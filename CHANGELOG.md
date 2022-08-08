@@ -5,7 +5,7 @@
 - Renamed master to management as part of "Words Matter Initiative"
 
 ### **BUG FIXES**
-- Fixed bug related to metadata files not getting copied from managment host to worker nodes
+- Fixed bug related to metadata files not getting copied from management host to worker nodes
 
 ## **1.0.1**
 ### **CHANGES**
