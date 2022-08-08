@@ -6,7 +6,7 @@
 ### About VPC resources
 variable "ssh_key_name" {
   type        = string
-  description = "Comma-separated list of names of the SSH key configured in your IBM Cloud account that is used to establish a connection to the Slurm master node. Ensure the SSH key is present in the same resource group and region where the cluster is being provisioned. If you do not have an SSH key in your IBM Cloud account, create one by using the instructions given [here](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys)."
+  description = "Comma-separated list of names of the SSH key configured in your IBM Cloud account that is used to establish a connection to the Slurm management node. Ensure the SSH key is present in the same resource group and region where the cluster is being provisioned. If you do not have an SSH key in your IBM Cloud account, create one by using the instructions given [here](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys)."
 }
 
 variable "api_key" {
@@ -60,7 +60,7 @@ variable "image_name" {
 variable "management_node_instance_type" {
   type        = string
   default     = "bx2-4x16"
-  description = "Specify the VSI profile type name to be used to create the master node for Slurm cluster. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles)"
+  description = "Specify the VSI profile type name to be used to create the management node for Slurm cluster. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles)"
   validation {
     # regex(...) fails if it cannot find a match
     condition     = can(regex("^[^\\s]+-[0-9]+x[0-9]+", var.management_node_instance_type))
@@ -114,7 +114,7 @@ variable "worker_node_count" {
 variable "volume_capacity" {
   type        = number
   default     = 100
-  description = "Size in GB for the block storage that would be used to build the NFS instance and would be available as a mount on Slurm master node. Enter a value in the range 10 - 16000."
+  description = "Size in GB for the block storage that would be used to build the NFS instance and would be available as a mount on Slurm management node. Enter a value in the range 10 - 16000."
   validation {
     condition     = 10 <= var.volume_capacity && var.volume_capacity <= 16000
     error_message = "Input \"volume_capacity\" must be >= 10 and <= 16000."
@@ -134,7 +134,7 @@ variable "volume_iops" {
 variable "management_node_count" {
   type        = number
   default     = 1
-  description = "This is the total number of master nodes. Enter a value in the range 1 - 2."
+  description = "This is the total number of management nodes. Enter a value in the range 1 - 2."
   validation {
     condition     = 1 <= var.management_node_count && var.management_node_count <= 2
     error_message = "Input \"management_node_count\" must be >= 1 and <= 2."  

@@ -88,12 +88,12 @@ OK
 6. After "Generate Plan" gives no errors, click on "Apply Plan" to create resources.
 7. When you click on "Apply plan" the post provisioning scripts run and the Slurm workload manager get installed.
 8. Click on Jobs then Activity and Show more to view the resource creation progress.
-9. Click on "Show more" if the "Apply Plan" activity is successful and copy the output SSH command to your laptop terminal to SSH to master node via a jump host public ip to SSH one of the nodes.
+9. Click on "Show more" if the "Apply Plan" activity is successful and copy the output SSH command to your laptop terminal to SSH to management node via a jump host public ip to SSH one of the nodes.
 10. Also use this jump host public ip and change the IP address of the node you want to access via the jump host to access specific hosts.
 
 
 # Storage Node and NFS Setup
-The storage node is configured as an NFS server and the data volume is mounted to the /data directory which is exported to share with Slurm master nodes.
+The storage node is configured as an NFS server and the data volume is mounted to the /data directory which is exported to share with Slurm management nodes.
 
 ### Steps to validate Cluster setups
 ###### 1. To validate the NFS storage is setup and exported correctly
@@ -110,7 +110,7 @@ The storage node is configured as an NFS server and the data volume is mounted t
 /data         10.240.128.32/27(sync,wdelay,hide,no_subtree_check,sec=sys,rw,secure,no_root_squash,no_all_squash)
 ```
 
-* At the NFS client end, the Slurm master/worker nodes in this case, we mount the /data directory in NFS server to the local directory, /data.
+* At the NFS client end, the Slurm management/worker nodes in this case, we mount the /data directory in NFS server to the local directory, /data.
 ```
 # df -k | grep data
 10.240.128.36:/data  100G   32M  100G   1% /mnt/data
@@ -118,11 +118,11 @@ The storage node is configured as an NFS server and the data volume is mounted t
 The command above shows that the local directory, /data, is mounted to the remote /data directory on the NFS server, 10.240.128.26.
 
 ###### 2. Steps to validate the cluster status
-* Login to the master as shown in the ssh_command output.
+* Login to the management as shown in the ssh_command output.
 ```
 # ssh -J root@52.117.4.140  root@10.240.128.37
 ```
-* Check the status of the munge and slurm controller daemon.
+* Check the status of the munge and slurm management daemon.
 ```
 # systemctl status munge
 # systemctl status slurmctld
@@ -177,7 +177,7 @@ The command above shows that the local directory, /data, is mounted to the remot
 ```
 
 ## Stop ufw firewall 
-*  Stop ufw firewall on all nodes (master and worker) if it doesn't work and restart slurmctld/slurmd or munge daemons.
+*  Stop ufw firewall on all nodes (management and worker) if it doesn't work and restart slurmctld/slurmd or munge daemons.
 ```
 # systemctl status ufw
 # systemctl stop ufw
@@ -230,8 +230,8 @@ No modules.
 |------|------|
 | [ibm_is_floating_ip.login_fip](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_floating_ip) | resource |
 | [ibm_is_instance.login](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_instance) | resource |
-| [ibm_is_instance.master](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_instance) | resource |
-| [ibm_is_instance.master_candidate](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_instance) | resource |
+| [ibm_is_instance.management](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_instance) | resource |
+| [ibm_is_instance.management_candidate](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_instance) | resource |
 | [ibm_is_instance.storage](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_instance) | resource |
 | [ibm_is_instance.worker](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_instance) | resource |
 | [ibm_is_public_gateway.mygateway](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_public_gateway) | resource |
@@ -256,7 +256,7 @@ No modules.
 | [ibm_is_image.image](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_image) | data source |
 | [ibm_is_image.stock_image](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_image) | data source |
 | [ibm_is_instance_profile.login](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_instance_profile) | data source |
-| [ibm_is_instance_profile.master](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_instance_profile) | data source |
+| [ibm_is_instance_profile.management](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_instance_profile) | data source |
 | [ibm_is_instance_profile.storage](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_instance_profile) | data source |
 | [ibm_is_instance_profile.worker](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_instance_profile) | data source |
 | [ibm_is_region.region](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_region) | data source |
@@ -266,7 +266,7 @@ No modules.
 | [ibm_is_vpc.vpc](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_vpc) | data source |
 | [ibm_is_zone.zone](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_zone) | data source |
 | [ibm_resource_group.rg](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/resource_group) | data source |
-| [template_file.master_user_data](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) | data source |
+| [template_file.management_user_data](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) | data source |
 | [template_file.storage_user_data](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) | data source |
 | [template_file.worker_user_data](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) | data source |
 
@@ -279,13 +279,112 @@ No modules.
 | <a name="input_cluster_prefix"></a> [cluster\_prefix](#input\_cluster\_prefix) | Prefix that would be used to name Slurm cluster and IBM Cloud resources provisioned to build the Slurm cluster instance. You cannot create more than one instance of Slurm Cluster with same name, make sure the name is unique. Enter a prefix name, such as my-hpcc | `string` | `"hpcc-slurm"` | no |
 | <a name="input_image_name"></a> [image\_name](#input\_image\_name) | Name of the image that you want to use to create virtual server instances in your IBM Cloud account to deploy as worker nodes in the Slurm cluster. By default, the automation uses a stock operating system image. If you would like to include your application-specific binary files, follow the instructions in [Planning for custom images](https://cloud.ibm.com/docs/vpc?topic=vpc-planning-custom-images) to create your own custom image and use that to build the Slurm cluster through this offering. Note that use of your own custom image may require changes to the cloud-init scripts, and potentially other files, in the Terraform code repository if different post-provisioning actions or variables need to be implemented. | `string` | `"ibm-ubuntu-20-04-minimal-amd64-2"` | no |
 | <a name="input_login_node_instance_type"></a> [login\_node\_instance\_type](#input\_login\_node\_instance\_type) | Specify the VSI profile type name to be used to create the login node for Slurm cluster. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) | `string` | `"bx2-2x8"` | no |
-| <a name="input_management_node_count"></a> [management\_node\_count](#input\_management\_node\_count) | This is the total number of master nodes. Enter a value in the range 1 - 2. | `number` | `1` | no |
-| <a name="input_management_node_instance_type"></a> [management\_node\_instance\_type](#input\_management\_node\_instance\_type) | Specify the VSI profile type name to be used to create the master node for Slurm cluster. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) | `string` | `"bx2-4x16"` | no |
+| <a name="input_management_node_count"></a> [management\_node\_count](#input\_management\_node\_count) | This is the total number of management nodes. Enter a value in the range 1 - 2. | `number` | `1` | no |
+| <a name="input_management_node_instance_type"></a> [management\_node\_instance\_type](#input\_management\_node\_instance\_type) | Specify the VSI profile type name to be used to create the management node for Slurm cluster. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) | `string` | `"bx2-4x16"` | no |
 | <a name="input_resource_group"></a> [resource\_group](#input\_resource\_group) | Resource group name from your IBM Cloud account where the VPC resources should be deployed. [Learn more](https://cloud.ibm.com/docs/account?topic=account-rgs) | `string` | `"Default"` | no |
 | <a name="input_ssh_allowed_ips"></a> [ssh\_allowed\_ips](#input\_ssh\_allowed\_ips) | Comma separated list of IP addresses that can access the Slurm instance through SSH interface. The default value allows any IP address to access the cluster. | `string` | `"0.0.0.0/0"` | no |
-| <a name="input_ssh_key_name"></a> [ssh\_key\_name](#input\_ssh\_key\_name) | Comma-separated list of names of the SSH key configured in your IBM Cloud account that is used to establish a connection to the Slurm master node. Ensure the SSH key is present in the same resource group and region where the cluster is being provisioned. If you do not have an SSH key in your IBM Cloud account, create one by using the instructions given [here](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys). | `string` | n/a | yes |
+| <a name="input_ssh_key_name"></a> [ssh\_key\_name](#input\_ssh\_key\_name) | Comma-separated list of names of the SSH key configured in your IBM Cloud account that is used to establish a connection to the Slurm management node. Ensure the SSH key is present in the same resource group and region where the cluster is being provisioned. If you do not have an SSH key in your IBM Cloud account, create one by using the instructions given [here](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys). | `string` | n/a | yes |
 | <a name="input_storage_node_instance_type"></a> [storage\_node\_instance\_type](#input\_storage\_node\_instance\_type) | Specify the VSI profile type name to be used to create the storage nodes for Slurm cluster. The storage nodes are the ones that would be used to create an NFS instance to manage the data for HPC workloads. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) | `string` | `"bx2-2x8"` | no |
-| <a name="input_volume_capacity"></a> [volume\_capacity](#input\_volume\_capacity) | Size in GB for the block storage that would be used to build the NFS instance and would be available as a mount on Slurm master node. Enter a value in the range 10 - 16000. | `number` | `100` | no |
+| <a name="input_volume_capacity"></a> [volume\_capacity](#input\_volume\_capacity) | Size in GB for the block storage that would be used to build the NFS instance and would be available as a mount on Slurm management node. Enter a value in the range 10 - 16000. | `number` | `100` | no |
+| <a name="input_volume_iops"></a> [volume\_iops](#input\_volume\_iops) | Number to represent the IOPS(Input Output Per Second) configuration for block storage to be used for NFS instance (valid only for volume\_profile=custom, dependent on volume\_capacity). Enter a value in the range 100 - 48000. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles#custom) | `number` | `300` | no |
+| <a name="input_volume_profile"></a> [volume\_profile](#input\_volume\_profile) | Name of the block storage volume type to be used for NFS instance. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles) | `string` | `"general-purpose"` | no |
+| <a name="input_vpc_name"></a> [vpc\_name](#input\_vpc\_name) | Name of an existing VPC in which the cluster resources will be deployed. If no value is given, then a new VPC will be provisioned for the cluster. [Learn more](https://cloud.ibm.com/docs/vpc) | `string` | `""` | no |
+| <a name="input_vpn_enabled"></a> [vpn\_enabled](#input\_vpn\_enabled) | Set to true to deploy a VPN gateway for VPC in the cluster (default: false). | `bool` | `false` | no |
+| <a name="input_vpn_peer_address"></a> [vpn\_peer\_address](#input\_vpn\_peer\_address) | The peer public IP address to which the VPN will be connected. | `string` | `""` | no |
+| <a name="input_vpn_peer_cidrs"></a> [vpn\_peer\_cidrs](#input\_vpn\_peer\_cidrs) | Comma separated list of peer CIDRs (e.g., 192.168.0.0/24) to which the VPN will be connected. | `string` | `""` | no |
+| <a name="input_vpn_preshared_key"></a> [vpn\_preshared\_key](#input\_vpn\_preshared\_key) | The pre-shared key for the VPN. | `string` | `""` | no |
+| <a name="input_worker_node_count"></a> [worker\_node\_count](#input\_worker\_node\_count) | This is the number of worker nodes that will be provisioned at the time the cluster is created. Enter a value in the range 1 - 500. | `number` | `1` | no |
+| <a name="input_worker_node_instance_type"></a> [worker\_node\_instance\_type](#input\_worker\_node\_instance\_type) | Specify the VSI profile type name to be used to create the worker nodes for Slurm cluster. The worker nodes are the ones where the workload execution takes place and choice should be made according to the characteristic of workloads. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) | `string` | `"bx2-4x16"` | no |
+| <a name="input_zone"></a> [zone](#input\_zone) | IBM Cloud zone name within the selected region where the Slurm cluster should be deployed. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-a-vpc-in-a-different-region#get-zones-using-the-cli) | `string` | n/a | yes |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| <a name="output_ha_enabled"></a> [ha\_enabled](#output\_ha\_enabled) | n/a |
+| <a name="output_region_name"></a> [region\_name](#output\_region\_name) | n/a |
+| <a name="output_ssh_command"></a> [ssh\_command](#output\_ssh\_command) | n/a |
+| <a name="output_vpc_name"></a> [vpc\_name](#output\_vpc\_name) | n/a |
+| <a name="output_vpn_config_info"></a> [vpn\_config\_info](#output\_vpn\_config\_info) | n/a |
+## Requirements
+
+| Name | Version |
+|------|---------|
+| <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | 1.30.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_ibm"></a> [ibm](#provider\_ibm) | 1.30.0 |
+| <a name="provider_template"></a> [template](#provider\_template) | n/a |
+
+## Modules
+
+No modules.
+
+## Resources
+
+| Name | Type |
+|------|------|
+| [ibm_is_floating_ip.login_fip](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_floating_ip) | resource |
+| [ibm_is_instance.login](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_instance) | resource |
+| [ibm_is_instance.management](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_instance) | resource |
+| [ibm_is_instance.management_candidate](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_instance) | resource |
+| [ibm_is_instance.storage](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_instance) | resource |
+| [ibm_is_instance.worker](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_instance) | resource |
+| [ibm_is_public_gateway.mygateway](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_public_gateway) | resource |
+| [ibm_is_security_group.login_sg](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_security_group) | resource |
+| [ibm_is_security_group.sg](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_security_group) | resource |
+| [ibm_is_security_group_rule.egress_all](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_security_group_rule) | resource |
+| [ibm_is_security_group_rule.ingress_all_local](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_security_group_rule) | resource |
+| [ibm_is_security_group_rule.ingress_tcp](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_security_group_rule) | resource |
+| [ibm_is_security_group_rule.ingress_vpn](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_security_group_rule) | resource |
+| [ibm_is_security_group_rule.login_egress_tcp](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_security_group_rule) | resource |
+| [ibm_is_security_group_rule.login_egress_tcp_rhsm](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_security_group_rule) | resource |
+| [ibm_is_security_group_rule.login_egress_udp_rhsm](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_security_group_rule) | resource |
+| [ibm_is_security_group_rule.login_ingress_tcp](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_security_group_rule) | resource |
+| [ibm_is_security_group_rule.login_ingress_tcp_rhsm](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_security_group_rule) | resource |
+| [ibm_is_security_group_rule.login_ingress_udp_rhsm](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_security_group_rule) | resource |
+| [ibm_is_subnet.login_subnet](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_subnet) | resource |
+| [ibm_is_subnet.subnet](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_subnet) | resource |
+| [ibm_is_volume.nfs](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_volume) | resource |
+| [ibm_is_vpc.vpc](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_vpc) | resource |
+| [ibm_is_vpn_gateway.vpn](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_vpn_gateway) | resource |
+| [ibm_is_vpn_gateway_connection.conn](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/resources/is_vpn_gateway_connection) | resource |
+| [ibm_is_image.image](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_image) | data source |
+| [ibm_is_image.stock_image](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_image) | data source |
+| [ibm_is_instance_profile.login](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_instance_profile) | data source |
+| [ibm_is_instance_profile.management](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_instance_profile) | data source |
+| [ibm_is_instance_profile.storage](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_instance_profile) | data source |
+| [ibm_is_instance_profile.worker](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_instance_profile) | data source |
+| [ibm_is_region.region](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_region) | data source |
+| [ibm_is_ssh_key.ssh_key](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_ssh_key) | data source |
+| [ibm_is_volume_profile.nfs](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_volume_profile) | data source |
+| [ibm_is_vpc.existing_vpc](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_vpc) | data source |
+| [ibm_is_vpc.vpc](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_vpc) | data source |
+| [ibm_is_zone.zone](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/is_zone) | data source |
+| [ibm_resource_group.rg](https://registry.terraform.io/providers/IBM-Cloud/ibm/1.30.0/docs/data-sources/resource_group) | data source |
+| [template_file.management_user_data](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) | data source |
+| [template_file.storage_user_data](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) | data source |
+| [template_file.worker_user_data](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) | data source |
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_api_key"></a> [api\_key](#input\_api\_key) | This is the API key for IBM Cloud account in which the Slurm cluster needs to be deployed. [Learn more](https://cloud.ibm.com/docs/account?topic=account-userapikey) | `string` | n/a | yes |
+| <a name="input_cluster_id"></a> [cluster\_id](#input\_cluster\_id) | ID of the cluster used by Slurm for configuration of resources. This must be up to 39 alphanumeric characters including the underscore (\_), the hyphen (-), and the period (.). Other special characters and spaces are not allowed. Do not use the name of any host or user as the name of your cluster. You cannot change it after installation. | `string` | `"SlurmCluster"` | no |
+| <a name="input_cluster_prefix"></a> [cluster\_prefix](#input\_cluster\_prefix) | Prefix that would be used to name Slurm cluster and IBM Cloud resources provisioned to build the Slurm cluster instance. You cannot create more than one instance of Slurm Cluster with same name, make sure the name is unique. Enter a prefix name, such as my-hpcc | `string` | `"hpcc-slurm"` | no |
+| <a name="input_image_name"></a> [image\_name](#input\_image\_name) | Name of the image that you want to use to create virtual server instances in your IBM Cloud account to deploy as worker nodes in the Slurm cluster. By default, the automation uses a stock operating system image. If you would like to include your application-specific binary files, follow the instructions in [Planning for custom images](https://cloud.ibm.com/docs/vpc?topic=vpc-planning-custom-images) to create your own custom image and use that to build the Slurm cluster through this offering. Note that use of your own custom image may require changes to the cloud-init scripts, and potentially other files, in the Terraform code repository if different post-provisioning actions or variables need to be implemented. | `string` | `"ibm-ubuntu-20-04-minimal-amd64-2"` | no |
+| <a name="input_login_node_instance_type"></a> [login\_node\_instance\_type](#input\_login\_node\_instance\_type) | Specify the VSI profile type name to be used to create the login node for Slurm cluster. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) | `string` | `"bx2-2x8"` | no |
+| <a name="input_management_node_count"></a> [management\_node\_count](#input\_management\_node\_count) | This is the total number of management nodes. Enter a value in the range 1 - 2. | `number` | `1` | no |
+| <a name="input_management_node_instance_type"></a> [management\_node\_instance\_type](#input\_management\_node\_instance\_type) | Specify the VSI profile type name to be used to create the management node for Slurm cluster. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) | `string` | `"bx2-4x16"` | no |
+| <a name="input_resource_group"></a> [resource\_group](#input\_resource\_group) | Resource group name from your IBM Cloud account where the VPC resources should be deployed. [Learn more](https://cloud.ibm.com/docs/account?topic=account-rgs) | `string` | `"Default"` | no |
+| <a name="input_ssh_allowed_ips"></a> [ssh\_allowed\_ips](#input\_ssh\_allowed\_ips) | Comma separated list of IP addresses that can access the Slurm instance through SSH interface. The default value allows any IP address to access the cluster. | `string` | `"0.0.0.0/0"` | no |
+| <a name="input_ssh_key_name"></a> [ssh\_key\_name](#input\_ssh\_key\_name) | Comma-separated list of names of the SSH key configured in your IBM Cloud account that is used to establish a connection to the Slurm management node. Ensure the SSH key is present in the same resource group and region where the cluster is being provisioned. If you do not have an SSH key in your IBM Cloud account, create one by using the instructions given [here](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys). | `string` | n/a | yes |
+| <a name="input_storage_node_instance_type"></a> [storage\_node\_instance\_type](#input\_storage\_node\_instance\_type) | Specify the VSI profile type name to be used to create the storage nodes for Slurm cluster. The storage nodes are the ones that would be used to create an NFS instance to manage the data for HPC workloads. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles) | `string` | `"bx2-2x8"` | no |
+| <a name="input_volume_capacity"></a> [volume\_capacity](#input\_volume\_capacity) | Size in GB for the block storage that would be used to build the NFS instance and would be available as a mount on Slurm management node. Enter a value in the range 10 - 16000. | `number` | `100` | no |
 | <a name="input_volume_iops"></a> [volume\_iops](#input\_volume\_iops) | Number to represent the IOPS(Input Output Per Second) configuration for block storage to be used for NFS instance (valid only for volume\_profile=custom, dependent on volume\_capacity). Enter a value in the range 100 - 48000. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles#custom) | `number` | `300` | no |
 | <a name="input_volume_profile"></a> [volume\_profile](#input\_volume\_profile) | Name of the block storage volume type to be used for NFS instance. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles) | `string` | `"general-purpose"` | no |
 | <a name="input_vpc_name"></a> [vpc\_name](#input\_vpc\_name) | Name of an existing VPC in which the cluster resources will be deployed. If no value is given, then a new VPC will be provisioned for the cluster. [Learn more](https://cloud.ibm.com/docs/vpc) | `string` | `""` | no |

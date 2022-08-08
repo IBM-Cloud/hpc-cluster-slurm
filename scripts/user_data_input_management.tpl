@@ -34,7 +34,7 @@ hf_ncores=${hf_ncores}
 hf_ncpus=${hf_ncpus}
 # memory size in MB for the instance profile
 hf_memInMB=${hf_memInMB}
-master_ips="${master_ips}"
+management_ips="${management_ips}"
 worker_ips="${worker_ips}"
 storage_ips="${storage_ips}"
 cluster_name="${cluster_id}"

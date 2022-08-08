@@ -3,7 +3,7 @@
 # Licensed under the Apache License v2.0
 ###################################################
 
-# User data script for Slurm master candidate node to support Ubuntu
+# User data script for Slurm management candidate node to support Ubuntu
 
 nfs_server=${storage_ips}
 nfs_mount_dir="data"
@@ -29,10 +29,32 @@ apt install nfs-common -y
 #fi
 
 #Update worker host name based on with nfs share or not
-mkdir -p /mnt/$nfs_mount_dir
-echo "${nfs_server}:/$nfs_mount_dir /mnt/$nfs_mount_dir nfs rw,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0" >> /etc/fstab
-mount /mnt/$nfs_mount_dir
-ln -s /mnt/$nfs_mount_dir /home/slurm/shared
+mountNFS (){
+    #This function will check for NFS mount availability, if not available wait and retry, than mount the nfs. 
+  nfs_server=$1 #NFS server IP
+  nfs_mount_dir=$2 #NFS mount directory
+  delay=$3 #time delay between retries in seconds
+  retry=$4 #retry count
+  logfile=$5 #logfile path
+  retryCount=0
+  showmount -e $nfs_server >> $logfile
+  showmountexitcode=$?
+  echo "showmount status code : $showmountexitcode and NFS wait count : $retryCount" >> $logfile
+  while [[ $showmountexitcode -ne 0 ]] && [[ $retryCount -le $retry ]] 
+  do
+    sleep $delay
+    showmount -e $nfs_server >> $logfile
+    showmountexitcode=$?
+    retryCount=$((retryCount + 1))
+    echo "showmount status code : $showmountexitcode and NFS wait count : $retryCount" >> $logfile
+  done
+  mkdir -p /mnt/$nfs_mount_dir
+  echo "$nfs_server:/$nfs_mount_dir /mnt/$nfs_mount_dir nfs defaults 0 0 " >> /etc/fstab
+  mount /mnt/$nfs_mount_dir >> $logfile
+  ln -s /mnt/$nfs_mount_dir /home/slurm/shared
+}
+
+mountNFS $nfs_server $nfs_mount_dir 10 30 $logfile
 
 #copy the public key to authorized key
 cat /mnt/data/ssh/authorized_keys >> ~/.ssh/authorized_keys
@@ -44,10 +66,7 @@ chmod 600 /home/slurm/.ssh/authorized_keys
 chmod 700 /home/slurm/.ssh
 chown -R slurm:slurm /home/slurm/.ssh
 
-# Due To Polkit Local Privilege Escalation Vulnerability
-chmod 0755 /usr/bin/pkexec
-
-# Allow ssh from masters
+# Allow ssh from management node
 sed -i "s#^\(AuthorizedKeysFile.*\)#\1 /mnt/data/ssh/authorized_keys#g" /etc/ssh/sshd_config
 systemctl restart sshd
 
@@ -58,7 +77,7 @@ cp /mnt/data/hosts /etc/hosts
 #copy the configuration file from nfs to worker
 cp /mnt/data/slurm.conf /etc/slurm-llnl/slurm.conf
 
-# After transferring munge key from master to worker node
+# After transferring munge key from management node to worker node
 # cd /etc/munge/
 sudo chown munge:munge /etc/munge/munge.key
 sudo chmod 400 /etc/munge/munge.key
@@ -74,7 +93,7 @@ chmod 755 /var/spool/
 sudo mkdir /var/run/slurm-llnl
 sudo chown slurm:slurm /var/run/slurm-llnl
 
-# on master candidate node - start slurmctl daemon
+# on management candidate node - start slurmctl daemon
 sudo systemctl enable slurmctld
 sudo systemctl restart slurmctld
 sudo systemctl status slurmctld

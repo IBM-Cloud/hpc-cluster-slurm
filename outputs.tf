@@ -4,7 +4,7 @@
 ###################################################
 
 output "ssh_command" {
-  value = "ssh -J root@${ibm_is_floating_ip.login_fip.address}  root@${ibm_is_instance.master[0].primary_network_interface[0].primary_ipv4_address}"
+  value = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -J root@${ibm_is_floating_ip.login_fip.address}  root@${ibm_is_instance.management[0].primary_network_interface[0].primary_ipv4_address}"
 }
 
 output "vpc_name" {
