@@ -38,7 +38,7 @@ data "ibm_is_vpc" "vpc" {
   depends_on = [ibm_is_vpc.vpc, data.ibm_is_vpc.existing_vpc]
 }
   
-data "ibm_is_instance_profile" "master" {
+data "ibm_is_instance_profile" "management" {
   name = var.management_node_instance_type
 }
 
@@ -54,16 +54,13 @@ locals {
   script_map = {
     "storage" = file("${path.module}/scripts/user_data_input_storage.tpl")
 
-    "master"  = file("${path.module}/scripts/user_data_input_master.tpl")
+    "management"  = file("${path.module}/scripts/user_data_input_management.tpl")
 
     "worker"  = file("${path.module}/scripts/user_data_input_worker.tpl")
-
-    "login"  = file("${path.module}/scripts/user_data_input_login.tpl")
   }
   storage_template_file = lookup(local.script_map, "storage")
-  master_template_file  = lookup(local.script_map, "master")
+  management_template_file  = lookup(local.script_map, "management")
   worker_template_file  = lookup(local.script_map, "worker")
-  login_template_file  = lookup(local.script_map, "login")
   tags                  = ["hpcc", var.cluster_prefix]
   hf_ncpus              = tonumber(data.ibm_is_instance_profile.worker.vcpu_count[0].value)
   hf_ncores             = local.hf_ncpus / 2
@@ -83,8 +80,8 @@ data "template_file" "storage_user_data" {
   }
 }
 
-data "template_file" "master_user_data" {
-  template = local.master_template_file
+data "template_file" "management_user_data" {
+  template = local.management_template_file
   vars = {
     vpc_apikey_value              = var.api_key
     resource_records_apikey_value = var.api_key
@@ -100,7 +97,7 @@ data "template_file" "master_user_data" {
     hf_ncores                     = local.hf_ncores
     hf_ncpus                      = local.hf_ncpus
     hf_memInMB                    = local.memInMB
-    master_ips                    = join(" ", local.master_ips)
+    management_ips                    = join(" ", local.management_ips)
     worker_ips                    = join(" ", local.worker_ips)
     storage_ips                   = join(" ", local.storage_ips)
     cluster_id                    = local.cluster_name
@@ -114,7 +111,7 @@ data "template_file" "worker_user_data" {
   template = local.worker_template_file
   vars = {
     rc_cidr_block  = ibm_is_subnet.subnet.ipv4_cidr_block
-    master_ips     = join(" ", local.master_ips)
+    management_ips     = join(" ", local.management_ips)
     storage_ips    = join(" ", local.storage_ips)
     cluster_id     = local.cluster_name
     hyperthreading = true
@@ -285,10 +282,6 @@ data "ibm_is_image" "stock_image" {
   name = local.stock_image_name
 }
 
-data "template_file" "login_user_data" {
-  template = local.login_template_file
-}
-
 resource "ibm_is_instance" "login" {
   name           = "${var.cluster_prefix}-login"
   image          = data.ibm_is_image.stock_image.id
@@ -297,7 +290,6 @@ resource "ibm_is_instance" "login" {
   zone           = data.ibm_is_zone.zone.name
   keys           = local.ssh_key_id_list
   resource_group = data.ibm_resource_group.rg.id
-  user_data      = data.template_file.login_user_data.rendered
   tags           = local.tags
 
   # fip will be assinged
@@ -317,7 +309,7 @@ resource "ibm_is_instance" "login" {
 #                       IP ADDRESS MAPPING
 #####################################################################
 # LSF assumes all the node IPs are known before their startup.
-# This causes a cyclic dependency, e.g., masters must know their IPs
+# This causes a cyclic dependency, e.g., management node must know their IPs
 # before starting themselves. We resolve this by explicitly
 # assigining IP addresses calculated by cidrhost(cidr_block, index).
 #
@@ -347,14 +339,14 @@ locals {
     cidrhost(ibm_is_subnet.subnet.ipv4_cidr_block, idx + 4)
   ]
 
-  master_ips = [
+  management_ips = [
     for idx in range(var.management_node_count) :
     cidrhost(ibm_is_subnet.subnet.ipv4_cidr_block, idx + 4 + length(local.storage_ips))
   ]
 
   worker_ips = [
     for idx in range(var.worker_node_count) :
-    cidrhost(ibm_is_subnet.subnet.ipv4_cidr_block, idx + 4 + length(local.storage_ips) + length(local.master_ips))
+    cidrhost(ibm_is_subnet.subnet.ipv4_cidr_block, idx + 4 + length(local.storage_ips) + length(local.management_ips))
   ]
 
   ssh_key_list = split(",", var.ssh_key_name)
@@ -389,22 +381,22 @@ resource "ibm_is_instance" "storage" {
   ]
 }
 
-resource "ibm_is_instance" "master" {
+resource "ibm_is_instance" "management" {
   count          = 1
-  name           = "${var.cluster_prefix}-master-${count.index}"
+  name           = "${var.cluster_prefix}-management-${count.index}"
   image          = data.ibm_is_image.image.id
-  profile        = data.ibm_is_instance_profile.master.name
+  profile        = data.ibm_is_instance_profile.management.name
   vpc            = data.ibm_is_vpc.vpc.id
   zone           = data.ibm_is_zone.zone.name
   keys           = local.ssh_key_id_list
   resource_group = data.ibm_resource_group.rg.id
-  user_data      = "${data.template_file.master_user_data.rendered} ${file("${path.module}/scripts/user_data_master.sh")}"
+  user_data      = "${data.template_file.management_user_data.rendered} ${file("${path.module}/scripts/user_data_management.sh")}"
   tags           = local.tags
   primary_network_interface {
     name                 = "eth0"
     subnet               = ibm_is_subnet.subnet.id
     security_groups      = [ibm_is_security_group.sg.id]
-    primary_ipv4_address = local.master_ips[count.index]
+    primary_ipv4_address = local.management_ips[count.index]
   }
   depends_on = [
     ibm_is_instance.storage,
@@ -414,26 +406,26 @@ resource "ibm_is_instance" "master" {
   ]
 }
 
-resource "ibm_is_instance" "master_candidate" {
+resource "ibm_is_instance" "management_candidate" {
   count          = local.ha_enabled ? var.management_node_count - 1: 0
-  name           = "${var.cluster_prefix}-master-candidate-${count.index}"
+  name           = "${var.cluster_prefix}-management-candidate-${count.index}"
   image          = data.ibm_is_image.image.id
-  profile        = data.ibm_is_instance_profile.master.name
+  profile        = data.ibm_is_instance_profile.management.name
   vpc            = data.ibm_is_vpc.vpc.id
   zone           = data.ibm_is_zone.zone.name
   keys           = local.ssh_key_id_list
   resource_group = data.ibm_resource_group.rg.id
-  user_data      = "${data.template_file.master_user_data.rendered} ${file("${path.module}/scripts/user_data_master_candidate.sh")}"
+  user_data      = "${data.template_file.management_user_data.rendered} ${file("${path.module}/scripts/user_data_management_candidate.sh")}"
   tags           = local.tags
   primary_network_interface {
     name                 = "eth0"
     subnet               = ibm_is_subnet.subnet.id
     security_groups      = [ibm_is_security_group.sg.id]
-    primary_ipv4_address = local.master_ips[count.index + 1]
+    primary_ipv4_address = local.management_ips[count.index + 1]
   }
   depends_on = [
     ibm_is_instance.storage,
-    ibm_is_instance.master,
+    ibm_is_instance.management,
     ibm_is_security_group_rule.ingress_tcp,
     ibm_is_security_group_rule.ingress_all_local,
     ibm_is_security_group_rule.egress_all,
@@ -459,8 +451,8 @@ resource "ibm_is_instance" "worker" {
   }
   depends_on = [
     ibm_is_instance.storage,
-    ibm_is_instance.master,
-    ibm_is_instance.master_candidate,
+    ibm_is_instance.management,
+    ibm_is_instance.management_candidate,
     ibm_is_security_group_rule.ingress_tcp,
     ibm_is_security_group_rule.ingress_all_local,
     ibm_is_security_group_rule.egress_all,

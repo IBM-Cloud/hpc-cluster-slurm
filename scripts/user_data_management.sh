@@ -3,7 +3,7 @@
 # Licensed under the Apache License v2.0
 ###################################################
 
-# User data script for Slurm master node to support Ubuntu
+# User data script for Slurm management node to support Ubuntu
 
 nfs_server=${storage_ips}
 nfs_mount_dir="data"
@@ -28,16 +28,37 @@ apt install nfs-common -y
 #done
 #fi
 
-#Update Master host name based on with nfs share or not
+#Update management node host name based on with nfs share or not
+mountNFS (){
+    #This function will check for NFS mount availability, if not available wait and retry, than mount the nfs. 
+  nfs_server=$1  #NFS server IP
+  nfs_mount_dir=$2  #NFS mount directory
+  delay=$3  #time delay between retries in seconds
+  retry=$4  #retry count
+  logfile=$5  #logfile path
+  retryCount=0
+  showmount -e $nfs_server >> $logfile
+  showmountexitcode=$?
+  echo "showmount status code : $showmountexitcode and NFS wait count : $retryCount" >> $logfile
+  while [[ $showmountexitcode -ne 0 ]] && [[ $retryCount -le $retry ]] 
+  do
+    sleep $delay
+    showmount -e $nfs_server >> $logfile
+    showmountexitcode=$?
+    retryCount=$((retryCount + 1))
+    echo "showmount status code : $showmountexitcode and NFS wait count : $retryCount" >> $logfile
+  done
+  mkdir -p /mnt/$nfs_mount_dir
+  echo "$nfs_server:/$nfs_mount_dir /mnt/$nfs_mount_dir nfs defaults 0 0 " >> /etc/fstab
+  mount /mnt/$nfs_mount_dir >> $logfile
+  ln -s /mnt/$nfs_mount_dir /home/slurm/shared
+}
+
 if ([ -n "${nfs_server}" ] && [ -n "${nfs_mount_dir}" ]); then
   echo "NFS server and share found, start mount nfs share!" >> $logfile
   #Mount the nfs share
-  showmount -e $nfs_server >> $logfile
-  mkdir -p /mnt/$nfs_mount_dir >> $logfile
-  mount -t nfs $nfs_server:/$nfs_mount_dir /mnt/$nfs_mount_dir >> $logfile
+  mountNFS $nfs_server $nfs_mount_dir 10 30 $logfile
   df -h /mnt/$nfs_mount_dir >> $logfile
-  #make auto mount when server is down
-  echo "$nfs_server:/$nfs_mount_dir /mnt/$nfs_mount_dir nfs defaults 0 0 " >> /etc/fstab
   echo "Mount nfs share done!" >> $logfile
   
   # Generate and copy a public ssh key
@@ -54,8 +75,8 @@ else
   echo "No NFS server and share found!" >> $logfile
 fi
 
-#every node (master & worker) needs to have the same munge key
-# use dd to generate the munge key on master
+#every node (management & worker) needs to have the same munge key
+# use dd to generate the munge key on management node
 dd if=/dev/urandom of=/etc/munge/munge.key bs=1c count=1024
 
 #cd /etc/munge/
@@ -83,14 +104,14 @@ ff02::3 ip6-allhosts
 EOF
 
 i=0
-for master_ip in ${master_ips}; do
+for management_ip in ${management_ips}; do
   if [ $i -gt 0 ]; then
       let j=$i-1
-      echo "$master_ip ${cluster_prefix}-master-candidate-$j" >> /etc/hosts
+      echo "$management_ip ${cluster_prefix}-management-candidate-$j" >> /etc/hosts
     else
-      echo "$master_ip ${cluster_prefix}-master-$i" >> /etc/hosts
+      echo "$management_ip ${cluster_prefix}-management-$i" >> /etc/hosts
     fi
-    master_hostnames="${master_hostnames} $cluster_prefix-master-$i"
+    management_hostnames="${management_hostnames} $cluster_prefix-management-$i"
     i=`expr $i + 1`
 done
 i=0
@@ -101,12 +122,12 @@ for worker_ip in ${worker_ips}; do
 done
 
 worker_index=`expr $i - 1`
-master_index=`expr $i - 1`
+management_index=`expr $i - 1`
 
 if $ha_enabled; then
-  backup_controller="SlurmctldHost=${cluster_prefix}-master-candidate-0"
+  backup_management="SlurmctldHost=${cluster_prefix}-management-candidate-0"
 else
-  backup_controller=""
+  backup_management=""
 fi
 
 if $hyperthreading; then
@@ -118,10 +139,10 @@ fi
 # Now set up slurm.conf
 cat > /etc/slurm-llnl/slurm.conf << EOF
 # Slurm Configuration file
-# Should be the same across master and all worker nodes
+# Should be the same across management node and all worker nodes
 
-SlurmctldHost=${cluster_prefix}-master-0
-${backup_controller}
+SlurmctldHost=${cluster_prefix}-management-0
+${backup_management}
 
 #SlurmctldHost=
 #
@@ -269,9 +290,6 @@ NodeName=${cluster_prefix}-worker-[0-${worker_index}] CPUs=${ncpus} ThreadsPerCo
 PartitionName=debug Nodes=${cluster_prefix}-worker-[0-${worker_index}] Default=YES MaxTime=INFINITE State=UP
 EOF
 
-# Due To Polkit Local Privilege Escalation Vulnerability
-chmod 0755 /usr/bin/pkexec
-
 # restart munge on every node
 sudo systemctl enable munge
 sudo systemctl start munge
@@ -282,22 +300,22 @@ sudo chown slurm:slurm /var/spool/slurm-llnl
 sudo mkdir /var/run/slurm-llnl
 sudo chown slurm:slurm /var/run/slurm-llnl
 
-# create that log file in master
+# create that log file in management node
 touch /var/log/slurm_jobcomp.log
 chown slurm:slurm /var/log/slurm_jobcomp.log
 
-# on master node
+# on management node
 sudo systemctl enable slurmctld
 sudo systemctl restart slurmctld
 sudo systemctl status slurmctld
 
-#copy the munge key from master node to nfs shared
+#copy the munge key from management node to nfs shared
 cp /etc/munge/munge.key /mnt/data/
 
 #copy the hosts list to nfs
 cp /etc/hosts /mnt/data/
 
-# copy the config file from master to nfs shared
+# copy the config file from management node to nfs shared
 cp /etc/slurm-llnl/slurm.conf /mnt/data/
 
 # restart munge and deamons on every node

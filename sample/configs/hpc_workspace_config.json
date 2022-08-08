@@ -8,7 +8,7 @@
     "description": "",
     "tags": ["hpcc", "slurm"],
     "template_repo": {
-      "url": "https://github.com/IBM-Cloud/hpc-cluster-slurm"
+      "url": "https://github.ibm.com/workload-eng-services/hpc-cluster-slurm"
     },
     "template_data": [
       {
@@ -93,7 +93,7 @@
             "value": "bx2-4x16",
             "type": "string",
             "secure": false,
-            "description": "Specify the virtual server instance profile type name to be used to create the master nodes for the Slurm cluster. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles)."
+            "description": "Specify the virtual server instance profile type name to be used to create the management nodes for the Slurm cluster. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles)."
           },
           {
             "name": "login_node_instance_type",
@@ -107,7 +107,7 @@
             "value": "1",
             "type": "number",
             "secure": false,
-            "description": "This is the total number of master nodes. Enter a value in the range 1 - 2"
+            "description": "This is the total number of management nodes. Enter a value in the range 1 - 2"
           },
           {
             "name": "worker_node_count",
@@ -121,14 +121,14 @@
             "value": "Please fill here",
             "type": "string",
             "secure": false,
-            "description":"Comma-separated list of names of the SSH key configured in your IBM Cloud account that is used to establish a connection to the Slurm master node. Ensure the SSH key is present in the same resource group and region where the cluster is being provisioned. If you do not have an SSH key in your IBM Cloud account, create one by using the instructions given here. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys)."
+            "description":"Comma-separated list of names of the SSH key configured in your IBM Cloud account that is used to establish a connection to the Slurm management node. Ensure the SSH key is present in the same resource group and region where the cluster is being provisioned. If you do not have an SSH key in your IBM Cloud account, create one by using the instructions given here. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys)."
           },
           {
             "name": "volume_capacity",
             "value": "100",
             "type": "number",
             "secure": false,
-            "description": "Size in GB for the block storage that would be used to build the NFS instance and would be available as a mount on Slurm master node. Enter a value in the range 10 - 16000."
+            "description": "Size in GB for the block storage that would be used to build the NFS instance and would be available as a mount on Slurm management node. Enter a value in the range 10 - 16000."
           },
           {
             "name": "volume_profile",

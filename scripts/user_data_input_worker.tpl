@@ -16,7 +16,7 @@ echo START `date '+%Y-%m-%d %H:%M:%S'`
 
 #input parameters
 rc_cidr_block="${rc_cidr_block}"
-master_ips="${master_ips}"
+management_ips="${management_ips}"
 storage_ips="${storage_ips}"
 cluster_name="${cluster_id}"
 hyperthreading="${hyperthreading}"
