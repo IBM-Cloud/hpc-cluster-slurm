@@ -1,5 +1,14 @@
 # **CHANGELOG**
 
+## **1.0.4** 
+### **CHANGES**
+- OS upgrated to Ubuntu 22.04 for Slurm Management node and Worker node.
+- Support for Baremetal worker.
+- Support for Scale filesystem.
+- Support for OS tunables.
+- Support for HDF5.
+- Support for Openmpi.
+
 ## **1.0.3** 
 ### **CHANGES**
 - Updated login node and nfs storage node to use RHEL 8.6 stock image instead of RHEL 8.2 stock image.
