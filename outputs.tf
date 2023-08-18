@@ -3,22 +3,32 @@
 # Licensed under the Apache License v2.0
 ###################################################
 
-output "ssh_command" {
-  value = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -J root@${ibm_is_floating_ip.login_fip.address}  root@${ibm_is_instance.management[0].primary_network_interface[0].primary_ipv4_address}"
-}
-
-output "vpc_name" {
-  value = "${data.ibm_is_vpc.vpc.name} --  - ${data.ibm_is_vpc.vpc.id}"
-}
-
-output "vpn_config_info" {
-  value = var.vpn_enabled ? "IP: ${ibm_is_vpn_gateway.vpn[0].public_ip_address}, CIDR: ${ibm_is_subnet.subnet.ipv4_cidr_block}, UDP ports: 500, 4500": null
-}
-
 output "region_name" {
   value = data.ibm_is_region.region.name
 }
 
-output "ha_enabled" {
-  value = local.ha_enabled
+output "vpc" {
+  value = "Name:- ${data.ibm_is_vpc.vpc.name} | ID:- ${data.ibm_is_vpc.vpc.id}"
+}
+
+output "vpn_config_info" {
+  value = var.vpn_enabled ? "IP: ${module.vpn[0].vpn_gateway_public_ip_address}, CIDR: ${module.subnet.ipv4_cidr_block}, UDP ports: 500, 4500": null
+}
+
+output "ssh_command" {
+  description = "SSH Command"
+  value = var.spectrum_scale_enabled ? "ssh -L 22443:localhost:443 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -J root@${module.login_fip.floating_ip_address}  ubuntu@${module.management[0].primary_network_interface}" : "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -J root@${module.login_fip.floating_ip_address}  ubuntu@${module.management[0].primary_network_interface}"
+}
+
+output "scale_gui_web_link" {
+  description = "Scale GUI Web Link"
+  value = var.spectrum_scale_enabled ? "https://localhost:22443" : null
+}
+
+/**
+*   NFS Server IP Address.
+**/
+output "nfs_ssh_command" {
+  description = "Storage Server SSH command"
+  value       = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -J root@${module.login_fip.floating_ip_address} root@${module.nfs_storage[0].primary_network_interface}"
 }
