@@ -3,7 +3,7 @@
 # Licensed under the Apache License v2.0
 ###################################################
 
-# User data script for Slurm worker node to support Ubuntu
+# User data script for Slurm management candidate node to support Ubuntu
 
 nfs_server=${storage_ips}
 nfs_mount_dir="data"
@@ -21,6 +21,12 @@ cat /lib/systemd/system/slurmd.service
 systemctl status munge
 
 apt install nfs-common -y
+
+#if ! $hyperthreading; then
+#for vcpu in `cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d- -f2 | cut -d- -f2 | uniq`; do
+#    echo 0 > /sys/devices/system/cpu/cpu$vcpu/online
+#done
+#fi
 
 #Update worker host name based on with nfs share or not
 mountNFS (){
@@ -43,7 +49,7 @@ mountNFS (){
     echo "showmount status code : $showmountexitcode and NFS wait count : $retryCount" >> $logfile
   done
   mkdir -p /mnt/$nfs_mount_dir
-  echo "${nfs_server}:/$nfs_mount_dir /mnt/$nfs_mount_dir nfs rw,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2,_netdev 0 0" >> /etc/fstab
+  echo "$nfs_server:/$nfs_mount_dir /mnt/$nfs_mount_dir nfs defaults 0 0 " >> /etc/fstab
   mount /mnt/$nfs_mount_dir >> $logfile
   ln -s /mnt/$nfs_mount_dir /home/slurm/shared
 }
@@ -64,46 +70,17 @@ chown -R slurm:slurm /home/slurm/.ssh
 sed -i "s#^\(AuthorizedKeysFile.*\)#\1 /mnt/data/ssh/authorized_keys#g" /etc/ssh/sshd_config
 systemctl restart sshd
 
-copyFile (){
-    #This function will check for file existence, if not present, wait and recheck for file presence than copies. 
-  fileSource=$1  #source file path
-  fileDestination=$2  #distination file path
-  delay=$3  #time delay between retries in seconds
-  retry=$4  #retry count
-  logfile=$5  #logfile path
-  retryCount=0
-  echo "$fileSource file copy wait count : $retryCount" >> $logfile
-  while [[ ! -f $fileSource ]] && [[ $retryCount -le $retry ]]
-  do
-    sleep $delay
-    retryCount=$((retryCount + 1))
-    echo "$fileSource file copy wait count : $retryCount" >> $logfile
-  done
-  if cp $fileSource $fileDestination >> $logfile; then
-    echo "$fileDestination copied" >> $logfile
-  else
-    echo "$fileDestination copy failed" >> $logfile
-  fi
-}
 # copy the munge key from nfs to worker
-copyFile /mnt/data/munge.key /etc/munge/munge.key 10 30 $logfile
+cp /mnt/data/munge.key /etc/munge/munge.key
 # copy the hosts list from nfs to worker
-copyFile /mnt/data/hosts /etc/hosts 10 30 $logfile
+cp /mnt/data/hosts /etc/hosts
 #copy the configuration file from nfs to worker
-copyFile /mnt/data/slurm.conf /etc/slurm-llnl/slurm.conf 10 30 $logfile
+cp /mnt/data/slurm.conf /etc/slurm-llnl/slurm.conf
 
 # After transferring munge key from management node to worker node
 # cd /etc/munge/
 sudo chown munge:munge /etc/munge/munge.key
 sudo chmod 400 /etc/munge/munge.key
-
-#Add hyperthreding condition
-#if ! $hyperthreading; then
-#for vcpu in `cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d- -f2 | cut -d- -f2 | uniq`; do
-#    echo 0 > /sys/devices/system/cpu/cpu$vcpu/online
-#done
-#fi
-
 
 # restart munge on every node
 sudo systemctl enable munge
@@ -116,11 +93,18 @@ chmod 755 /var/spool/
 sudo mkdir /var/run/slurm-llnl
 sudo chown slurm:slurm /var/run/slurm-llnl
 
-# worker node
-sudo systemctl enable slurmd
-sudo systemctl start slurmd
-sudo systemctl status slurmd
+# on management candidate node - start slurmctl daemon
+sudo systemctl enable slurmctld
+sudo systemctl restart slurmctld
+sudo systemctl status slurmctld
 
 # restart munge and deamons 
 systemctl restart munge
-systemctl restart slurmd
+systemctl restart slurmctld
+
+#Add hyperthreding condition
+if $hyperthreading; then
+  ncpus=${hf_ncpus}
+else
+  ncpus=${hf_ncores}
+fi

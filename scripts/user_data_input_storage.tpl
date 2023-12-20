@@ -16,4 +16,3 @@ echo START `date '+%Y-%m-%d %H:%M:%S'`
 
 #input parameters
 rc_cidr_block="${rc_cidr_block}"
-cluster_prefix="${cluster_prefix}"

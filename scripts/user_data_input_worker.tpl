@@ -19,8 +19,4 @@ rc_cidr_block="${rc_cidr_block}"
 management_ips="${management_ips}"
 storage_ips="${storage_ips}"
 cluster_name="${cluster_id}"
-cluster_prefix="${cluster_prefix}"
 hyperthreading="${hyperthreading}"
-worker_node_type="${worker_node_type}"
-spectrum_scale="${spectrum_scale}"
-

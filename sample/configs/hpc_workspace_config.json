@@ -1,19 +1,19 @@
 {
-    "name": "hpcc-slurm-scale-cluster-marvel",
+    "name": "hpcc-slurm-test",
     "type": [
-      "terraform_v1.3"
+      "terraform_v0.14"
     ],
     "location": "us-east",
     "resource_group": "Default",
     "description": "",
     "tags": ["hpcc", "slurm"],
     "template_repo": {
-      "url": "https://github.ibm.com/workload-eng-services/hpc-cluster-slurm/tree/marvel-poc"
+      "url": "https://github.ibm.com/workload-eng-services/hpc-cluster-slurm"
     },
     "template_data": [
       {
         "folder": ".",
-        "type": "terraform_v1.3",
+        "type": "terraform_v0.14",
         "env_values":[
           { 
             "TF_CLI_ARGS_apply": "-parallelism=250"
@@ -33,57 +33,8 @@
         ],
         "variablestore": [
           {
-            "name": "ssh_key_name",
-            "value": "Please fill here",
-            "type": "string",
-            "secure": false,
-            "description":"Comma-separated list of names of the SSH key configured in your IBM Cloud account that is used to establish a connection to the Slurm management node. Ensure the SSH key is present in the same resource group and region where the cluster is being provisioned. If you do not have an SSH key in your IBM Cloud account, create one by using the instructions given here. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys)."
-          },
-          {
-            "name": "api_key",
-            "value": "Please fill here",
-            "type": "string",
-            "secure": true,
-            "description": "This is the API key for IBM Cloud account in which the Slurm cluster needs to be deployed. [Learn more](https://cloud.ibm.com/docs/account?topic=account-userapikey)."
-          },
-          {
-            "name": "vpc_name",
-            "value": "",
-            "type": "string",
-            "secure": false,
-            "description": "Name of an existing VPC in which the cluster resources will be deployed. If no value is given, then a new VPC will be provisioned for the cluster. [Learn more](https://cloud.ibm.com/docs/vpc)"
-          },
-          {
-            "name": "vpc_cidr_block",
-            "value": "[\"10.241.0.0/18\"]",
-            "type": "list(string)",
-            "secure": false,
-            "description": "Creates the address prefix for the new VPC, when the vpc_name variable is empty. Only a single address prefix is allowed. For more information, see [Setting IP ranges](https://cloud.ibm.com/docs/vpc?topic=vpc-vpc-addressing-plan-design)."
-          },
-          {
-            "name": "vpc_cluster_private_subnets_cidr_blocks",
-            "value": "[\"10.241.0.0/22\"]",
-            "type": "list(string)",
-            "secure": false,
-            "description": "The CIDR block that's required for the creation of the cluster private subnet. Modify the CIDR block if it has already been reserved or used for other applications within the VPC or conflicts with any on-premises CIDR blocks when using a hybrid environment. Provide only one CIDR block for the creation of the subnet. Make sure to select a CIDR block size that will accommodate the maximum number of management, storage, and both static worker nodes that you expect to have in your cluster.  For more information on CIDR block size selection, see [Choosing IP ranges for your VPC](https://cloud.ibm.com/docs/vpc?topic=vpc-choosing-ip-ranges-for-your-vpc)."
-          },
-          {
-            "name": "vpc_cluster_login_private_subnets_cidr_blocks",
-            "value": "[\"10.241.4.0/28\"]",
-            "type": "list(string)",
-            "secure": false,
-            "description": "The CIDR block that's required for the creation of the login cluster private subnet. Modify the CIDR block if it has already been reserved or used for other applications within the VPC or conflicts with any on-premises CIDR blocks when using a hybrid environment. Provide only one CIDR block for the creation of the login subnet. Since login subnet is used only for the creation of login virtual server instance provide a CIDR range of /28."
-          },
-          {
-            "name": "resource_group",
-            "value": "Default",
-            "type": "string",
-            "secure": false,
-            "description":"Resource group name from your IBM Cloud account where the VPC resources should be deployed. [Learn more](https://cloud.ibm.com/docs/account?topic=account-rgs)."
-          },
-          {
             "name": "cluster_prefix",
-            "value": "hpcc-slurm",
+            "value": "hpcc-slurm-test",
             "type": "string",
             "secure": false,
             "description": "Prefix that is used to name the Slurm cluster and IBM Cloud resources that are provisioned to build the Slurm cluster instance. You cannot create more than one instance of the Slurm cluster with the same name. Make sure that the name is unique. Enter a prefix name, such as my-hpcc."
@@ -96,6 +47,20 @@
             "description": "ID of the cluster used by Slurm for configuration of resources. This must be up to 39 alphanumeric characters including the underscore (_), the hyphen (-), and the period (.). Other special characters and spaces are not allowed. Do not use the name of any host or user as the name of your cluster. You cannot change it after installation."
           },
           {
+            "name": "vpc_name",
+            "value": "",
+            "type": "string",
+            "secure": false,
+            "description": "Name of an existing VPC in which the cluster resources will be deployed. If no value is given, then a new VPC will be provisioned for the cluster. [Learn more](https://cloud.ibm.com/docs/vpc)"
+          },
+          {
+            "name": "resource_group",
+            "value": "Default",
+            "type": "string",
+            "secure": false,
+            "description":"Resource group name from your IBM Cloud account where the VPC resources should be deployed. [Learn more](https://cloud.ibm.com/docs/account?topic=account-rgs)."
+          },
+          {
             "name": "zone",
             "value": "Please fill here",
             "type": "string",
@@ -103,25 +68,11 @@
             "description": "IBM Cloud zone name within the selected region where the Slurm cluster should be deployed. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-a-vpc-in-a-different-region#get-zones-using-the-cli)."
           },
           {
-            "name": "management_node_image_name",
-            "value": "hpcc-slurm-management-v1-03may23",
+            "name": "image_name",
+            "value": "ibm-ubuntu-20-04-minimal-amd64-2",
             "type": "string",
             "secure": false,
             "description":"Name of the image that you want to use to create virtual server instances in your IBM Cloud account to deploy as worker nodes in the Slurm cluster. By default, the automation uses a stock operating system image. If you would like to include your application-specific binary files, follow the instructions in [Planning for custom images](https://cloud.ibm.com/docs/vpc?topic=vpc-planning-custom-images) to create your own custom image and use that to build the Slurm cluster through this offering. Note that use of your own custom image may require changes to the cloud-init scripts, and potentially other files, in the Terraform code repository if different post-provisioning actions or variables need to be implemented."
-          },
-          {
-            "name": "management_node_instance_type",
-            "value": "cx2-16x32",
-            "type": "string",
-            "secure": false,
-            "description": "Specify the virtual server instance profile type name to be used to create the management nodes for the Slurm cluster. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles)."
-          },
-          {
-            "name": "login_node_instance_type",
-            "value": "cx2-16x32",
-            "type": "string",
-            "secure": false,
-            "description": "Specify the virtual server instance profile type name to be used to create the login node for the Slurm cluster. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles)."
           },
           {
             "name": "storage_node_instance_type",
@@ -131,13 +82,6 @@
             "description": "Specify the virtual server instance profile type to be used to create the storage nodes for the Slurm cluster. The storage nodes are the ones that are used to create an NFS instance to manage the data for HPC workloads. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles)."
           },
           {
-            "name": "worker_node_type",
-            "value": "vsi",
-            "type": "string",
-            "secure": false,
-            "description": "The type of server that's used for the worker nodes: virtual server instance or bare metal server. If you choose vsi, the worker nodes are deployed on virtual server instances, or if you choose baremetal, the worker nodes are deployed on bare metal servers."
-          },          
-          {
             "name": "worker_node_instance_type",
             "value": "bx2-4x16",
             "type": "string",
@@ -145,13 +89,40 @@
             "description": "Specify the virtual server instance profile type name to be used to create the worker nodes for the Slurm cluster. The worker nodes are the ones where the workload execution takes place and the choice should be made according to the characteristic of workloads. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles)."
           },
           {
+            "name": "management_node_instance_type",
+            "value": "bx2-4x16",
+            "type": "string",
+            "secure": false,
+            "description": "Specify the virtual server instance profile type name to be used to create the management nodes for the Slurm cluster. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles)."
+          },
+          {
+            "name": "login_node_instance_type",
+            "value": "bx2-2x8",
+            "type": "string",
+            "secure": false,
+            "description": "Specify the virtual server instance profile type name to be used to create the login node for the Slurm cluster. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-profiles)."
+          },
+          {
+            "name": "management_node_count",
+            "value": "1",
+            "type": "number",
+            "secure": false,
+            "description": "This is the total number of management nodes. Enter a value in the range 1 - 2"
+          },
+          {
             "name": "worker_node_count",
-            "value": "3",
+            "value": "1",
             "type": "number",
             "secure": false,
             "description": "This is the number of worker nodes that will be provisioned at the time the cluster is created. Enter a value in the range 1 - 500."
           },
-          
+          {
+            "name": "ssh_key_name",
+            "value": "Please fill here",
+            "type": "string",
+            "secure": false,
+            "description":"Comma-separated list of names of the SSH key configured in your IBM Cloud account that is used to establish a connection to the Slurm management node. Ensure the SSH key is present in the same resource group and region where the cluster is being provisioned. If you do not have an SSH key in your IBM Cloud account, create one by using the instructions given here. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-ssh-keys)."
+          },
           {
             "name": "volume_capacity",
             "value": "100",
@@ -172,55 +143,20 @@
             "type": "number",
             "secure": false,
             "description": "Number to represent the IOPS(Input Output Per Second) configuration for block storage to be used for NFS instance (valid only for volume_profile=custom, dependent on volume_capacity). Enter a value in the range 100 - 48000. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-block-storage-profiles#custom)."
-          },       
-          {
-            "name": "remote_allowed_ips",
-            "value": "[\"Please fill here\"]",
-            "type": "list(string)",
-            "secure": false,
-            "description": "Comma-separated list of IP addresses that can access the Slurm instance through an SSH. For security purposes, provide the public IP addresses assigned to the devices that are authorized to establish SSH connections (for example, [\"169.45.117.34\"]). To fetch the IP address of the device, use [https://ipv4.icanhazip.com/](https://ipv4.icanhazip.com/)."
-          },       
-          {
-            "name": "spectrum_scale_enabled",
-            "value": "false",
-            "type": "bool",
-            "secure": false,
-            "description": "Setting this to true will enables Spectrum Scale integration with the cluster. Otherwise, Spectrum Scale integration will be disabled (default). By entering 'true' for the property, you have also agreed to one of the two conditions: (1) You are using the software in production and confirm you have sufficient licenses to cover your use under the International Program License Agreement (IPLA). (2) You are evaluating the software and agree to abide by the International License Agreement for Evaluation of Programs (ILAE). Note: Failure to comply with licenses for production use of software is a violation of [IBM International Program License Agreement](https://www.ibm.com/software/passportadvantage/programlicense.html)."
           },
           {
-            "name": "TF_WAIT_DURATION",
-            "value": "true",
-            "type": "bool",
-            "secure": false,
-            "description": "wait duration time set for the storage and worker node to complete the entire setup"
-          },
-          {
-            "name": "storage_cluster_gui_username",
+            "name": "api_key",
             "value": "Please fill here",
             "type": "string",
-            "secure": false,
-            "description": "GUI user to perform system management and monitoring tasks on storage cluster."
+            "secure": true,
+            "description": "This is the API key for IBM Cloud account in which the Slurm cluster needs to be deployed. [Learn more](https://cloud.ibm.com/docs/account?topic=account-userapikey)."
           },
           {
-            "name": "storage_cluster_gui_password",
-            "value": "Please fill here",
-            "type": "string",
+            "name": "ssh_allowed_ips",
+            "value": "",
+            "type ": "string",
             "secure": false,
-            "description": "Password for storage cluster GUI"
-          },
-          {
-            "name": "scale_storage_cluster_filesystem_mountpoint",
-            "value": "/gpfs/fs1",
-            "type": "string",
-            "secure": false,
-            "description": "Spectrum Scale storage cluster (owningCluster) file system mount point. The owningCluster is the cluster that owns and serves the file system to be mounted.  For more information, see [Mounting a remote GPFS file system](https://www.ibm.com/docs/en/spectrum-scale/5.1.5?topic=system-mounting-remote-gpfs-file)."
-          },
-          {
-            "name": "scale_filesystem_block_size",
-            "value": "4M",
-            "type": "string",
-            "secure": false,
-            "description": "Specified block size must be a valid IBM Spectrum Scale supported block sizes (256K, 512K, 1M, 2M, 4M, 8M, 16M)."
+            "description": "Comma separated list of IP addresses that can access the Slurm instance through SSH interface. The default value allows any IP address to access the cluster."
           },
           {
             "name": "vpn_enabled",
@@ -228,6 +164,13 @@
             "type": "bool",
             "secure": false,
             "description": "Set to true to deploy a VPN gateway for VPC in the cluster (default: false)."
+          },
+          {
+            "name": "vpn_preshared_key",
+            "value": "",
+            "type": "string",
+            "secure": true,
+            "description": "The pre-shared key for the VPN."
           },
           {
             "name": "vpn_peer_cidrs",
@@ -242,13 +185,6 @@
             "type": "string",
             "secure": false,
             "description": "The peer public IP address to which the VPN will be connected."
-          },
-          {
-            "name": "vpn_preshared_key",
-            "value": "",
-            "type": "string",
-            "secure": true,
-            "description": "The pre-shared key for the VPN."
           }
         ]
       }
