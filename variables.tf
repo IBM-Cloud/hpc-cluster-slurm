@@ -46,6 +46,12 @@ variable "cluster_id" {
   }
 }
 
+variable "slurm-version" {
+  type = string
+  default = ""
+  description = "The explicit version tag for the slurm-wlm package. Leave empty for latest package on distro version. e.g For Jammy, see https://packages.ubuntu.com/search?keywords=slurm-wlm&searchon=names&suite=jammy&section=all"
+}
+
 variable "zone" {
   type        = string
   description = "IBM Cloud zone name within the selected region where the Slurm cluster should be deployed. [Learn more](https://cloud.ibm.com/docs/vpc?topic=vpc-creating-a-vpc-in-a-different-region#get-zones-using-the-cli)"
@@ -53,7 +59,7 @@ variable "zone" {
 
 variable "image_name" {
   type        = string
-  default     = "ibm-ubuntu-20-04-minimal-amd64-2"
+  default     = "ibm-ubuntu-22-04-3-minimal-amd64-2"
   description = "Name of the image that you want to use to create virtual server instances in your IBM Cloud account to deploy as worker nodes in the Slurm cluster. By default, the automation uses a stock operating system image. If you would like to include your application-specific binary files, follow the instructions in [Planning for custom images](https://cloud.ibm.com/docs/vpc?topic=vpc-planning-custom-images) to create your own custom image and use that to build the Slurm cluster through this offering. Note that use of your own custom image may require changes to the cloud-init scripts, and potentially other files, in the Terraform code repository if different post-provisioning actions or variables need to be implemented."
 }
 

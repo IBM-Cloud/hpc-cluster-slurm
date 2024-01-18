@@ -97,13 +97,14 @@ data "template_file" "management_user_data" {
     hf_ncores                     = local.hf_ncores
     hf_ncpus                      = local.hf_ncpus
     hf_memInMB                    = local.memInMB
-    management_ips                    = join(" ", local.management_ips)
+    management_ips                = join(" ", local.management_ips)
     worker_ips                    = join(" ", local.worker_ips)
     storage_ips                   = join(" ", local.storage_ips)
     cluster_id                    = local.cluster_name
     cluster_prefix                = var.cluster_prefix
     hyperthreading                = true
     ha_enabled                    = local.ha_enabled
+    slurm_version                 = var.slurm-version
   }
 }
 
@@ -115,6 +116,7 @@ data "template_file" "worker_user_data" {
     storage_ips    = join(" ", local.storage_ips)
     cluster_id     = local.cluster_name
     hyperthreading = true
+    slurm_version  = var.slurm-version
   }
 }
 

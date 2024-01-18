@@ -10,8 +10,8 @@ nfs_mount_dir="data"
 
 sudo apt update -y
 
-sudo apt install slurm-wlm=19.05.5-1 -y
-sudo apt install slurm-wlm-doc=19.05.5-1 -y
+sudo apt install slurm-wlm=${slurm_version} -y
+sudo apt install slurm-wlm-doc=${slurm_version} -y
 
 # checking paths in these service files
 cat /lib/systemd/system/slurmctld.service
