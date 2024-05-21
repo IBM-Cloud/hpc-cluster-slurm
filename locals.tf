@@ -51,7 +51,7 @@ locals{
   gpfs_package_path           = "/mnt/data/scale/package_to_install"
 
 
-  stock_image_name = "ibm-redhat-8-6-minimal-amd64-1"
+  stock_image_name = "ibm-redhat-8-8-minimal-amd64-3"
 
   management_node_count = 1
   total_ipv4_address_count = pow(2, ceil(log(var.worker_node_count + local.management_node_count + 5 + 1 + 4, 2)))

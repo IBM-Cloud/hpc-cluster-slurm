@@ -1,19 +1,19 @@
 {
-    "name": "hpcc-slurm-scale-cluster-marvel",
+    "name": "hpc-cluster-slurm",
     "type": [
-      "terraform_v1.3"
+      "terraform_v1.5"
     ],
     "location": "us-east",
     "resource_group": "Default",
     "description": "",
     "tags": ["hpcc", "slurm"],
     "template_repo": {
-      "url": "https://github.ibm.com/workload-eng-services/hpc-cluster-slurm/tree/marvel-poc"
+      "url": "https://github.com/IBM-Cloud/hpc-cluster-slurm"
     },
     "template_data": [
       {
         "folder": ".",
-        "type": "terraform_v1.3",
+        "type": "terraform_v1.5",
         "env_values":[
           { 
             "TF_CLI_ARGS_apply": "-parallelism=250"
@@ -189,8 +189,8 @@
           },
           {
             "name": "TF_WAIT_DURATION",
-            "value": "true",
-            "type": "bool",
+            "value": "600s",
+            "type": "string",
             "secure": false,
             "description": "wait duration time set for the storage and worker node to complete the entire setup"
           },
@@ -205,7 +205,7 @@
             "name": "storage_cluster_gui_password",
             "value": "Please fill here",
             "type": "string",
-            "secure": false,
+            "secure": true,
             "description": "Password for storage cluster GUI"
           },
           {
