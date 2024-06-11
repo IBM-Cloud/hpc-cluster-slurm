@@ -148,12 +148,8 @@ variable "worker_node_instance_type" {
 
 variable "worker_node_count" {
   type        = number
-  default     = 3
-  description = "This is the number of worker nodes that will be provisioned at the time the cluster is created. Enter a value in the range 3 - 200."
-  validation {
-    condition     = 3 <= var.worker_node_count && var.worker_node_count <= 200
-    error_message = "Input \"worker_node_count\" must be >= 3 and <= 200."
-  }
+  default     = 1
+  description = "This is the number of worker nodes that will be provisioned at the time the cluster is created."
 }
 
 variable "volume_capacity" {

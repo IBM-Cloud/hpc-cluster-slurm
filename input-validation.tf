@@ -14,4 +14,9 @@ locals {
   spectrum_scale_enabled_error_msg  = "The solution supports scale only with baremetal worker."
   validate_spectrum_scale_enabled_chk = regex("^${local.spectrum_scale_enabled_error_msg}$", (local.validate_spectrum_scale_enabled ? local.spectrum_scale_enabled_error_msg : ""))
 
+  // Validate worker_node input count
+  validate_worker_node_count = var.spectrum_scale_enabled ? (var.worker_node_count >= 3 && var.worker_node_count <= 200) : (var.worker_node_count >= 1 && var.worker_node_count <= 200)
+  worker_node_count_error_msg = "When Scale storage is enabled, the input for \"worker_node_count\" must be between 3 and 200. If Scale is not enabled, the minimum number of workers can start from 1, with a maximum of 200."
+  validate_worker_node_count_chk = regex("^${local.worker_node_count_error_msg}$", (local.validate_worker_node_count ? local.worker_node_count_error_msg : ""))
+
 }
